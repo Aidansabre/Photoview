@@ -1,0 +1,8 @@
+Options -Indexes
+<FilesMatch "^(config\.php|\.user\.ini|README\.md)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_php.c>
+  php_value upload_max_filesize 16M
+  php_value post_max_size 20M
+</IfModule>
