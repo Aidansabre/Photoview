@@ -60,9 +60,24 @@ function cleanup(): void {
     }
 }
 
+function normalize_passphrase(string $p): string {
+    return mb_strtolower(trim($p));
+}
+
+// Session ids (folder names) of the passphrases currently listed in passphrases.php.
+function active_sids(): array {
+    $list = require __DIR__ . '/passphrases.php';
+    $sids = [];
+    foreach (is_array($list) ? $list : [] as $p) {
+        $p = normalize_passphrase((string)$p);
+        if ($p !== '') $sids[hash_hmac('sha256', $p, secret())] = true;
+    }
+    return $sids;
+}
+
 function session_dir(): string {
     $sid = $_COOKIE[COOKIE] ?? '';
-    if (!preg_match(SID_RE, $sid) || !is_dir(DATA_DIR . '/' . $sid)) {
+    if (!preg_match(SID_RE, $sid) || !isset(active_sids()[$sid]) || !is_dir(DATA_DIR . '/' . $sid)) {
         fail(401, 'Not logged in or session expired');
     }
     return DATA_DIR . '/' . $sid;
@@ -107,11 +122,9 @@ $action = $_GET['action'] ?? '';
 switch ($action) {
     case 'login':
         require_post();
-        $pw = trim((string)($_POST['password'] ?? ''));
-        if (mb_strlen($pw) < MIN_PASSWORD_LENGTH) {
-            fail(400, 'Password must be at least ' . MIN_PASSWORD_LENGTH . ' characters');
-        }
+        $pw = normalize_passphrase((string)($_POST['passphrase'] ?? ''));
         $sid = hash_hmac('sha256', $pw, secret());
+        if ($pw === '' || !isset(active_sids()[$sid])) fail(403, 'Unknown passphrase');
         $dir = DATA_DIR . '/' . $sid;
         $created = !is_dir($dir);
         if ($created && !mkdir($dir, 0750)) fail(500, 'Cannot create session');

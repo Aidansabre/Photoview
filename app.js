@@ -31,7 +31,7 @@ function showLogin() {
   closeLightbox();
   $('app').hidden = true;
   $('login').hidden = false;
-  $('password').focus();
+  $('passphrase').focus();
 }
 
 function showApp() {
@@ -44,10 +44,10 @@ $('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('login-error').textContent = '';
   const fd = new FormData();
-  fd.append('password', $('password').value);
+  fd.append('passphrase', $('passphrase').value);
   try {
     await api('login', fd);
-    $('password').value = '';
+    $('passphrase').value = '';
     showApp();
   } catch (err) {
     $('login-error').textContent = err.message;

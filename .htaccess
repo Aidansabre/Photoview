@@ -1,5 +1,5 @@
 Options -Indexes
-<FilesMatch "^(config\.php|\.user\.ini|README\.md)$">
+<FilesMatch "^(config\.php|passphrases\.php|\.user\.ini|README\.md)$">
   Require all denied
 </FilesMatch>
 <IfModule mod_php.c>
